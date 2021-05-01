@@ -1,6 +1,6 @@
 const mysqlConnector = require('../thirdparty/mysqlConnector');
 
-const __musicQueryFactory = {
+const __musicQueryMapper = {
     insertMusic: `
         INSERT INTO music(track_name, album_name, artist_name, music_file_path)
         VALUES (?, ?, ?, ?)
@@ -34,7 +34,7 @@ const musicRepository = {
         let db;
         try {
             db = await mysqlConnector.createDb();
-            const sql = __musicQueryFactory.insertMusic;
+            const sql = __musicQueryMapper.insertMusic;
             console.log(`execute query : [${sql}]`);
             const [rows] = await db.execute({
                                             sql,
@@ -57,7 +57,7 @@ const musicRepository = {
         let db;
         try {
             db = await mysqlConnector.createDb();
-            const sql = __musicQueryFactory.updateMusic;
+            const sql = __musicQueryMapper.updateMusic;
             console.log(`execute query : [${sql}]`);
             const [rows] = await db.execute({
                                             sql,
@@ -80,7 +80,7 @@ const musicRepository = {
         let db;
         try {
             db = await mysqlConnector.createDb();
-            const sql = __musicQueryFactory.findMusicWhereLike+db.escape('%'+track.trim()+'%');
+            const sql = __musicQueryMapper.findMusicWhereLike+db.escape('%'+track.trim()+'%');
             console.log(`execute query : [${sql}]`);
             const [rows] = await db.execute({
                                             sql,
