@@ -68,19 +68,17 @@ const userService = {
             passport.authenticate('local', (authError, userId, info) => {
                 if (authError) {
                     console.log(authError);
-                    return resolve(next(loginError));
+                    return resolve(next(authError));
                 }
-
                 if (!userId) {
                     return resolve(info);
                 }
-
+                
                 return req.login(userId, (loginError) => {
                     if (loginError) {
                         console.log(loginError);
                         return resolve(next(loginError));
                     }
-
                     return resolve(info);
                 })
             })(req, res, next);
@@ -90,21 +88,8 @@ const userService = {
         req.logout();
         req.session.destroy();
     },
-    updateUserPassword: async function ({id, password, newPassword}) {
-        const user = await userRepository.findById(id);
-        const isValid = await cryptoService.passwordVerify({
-            givenPw: password,
-            targetPw: user.userPassword,
-            targetPwSalt: user.passwordSalt
-        });
 
-        if(!isValid) {
-            return {
-                isSuccess: false,
-                message: "입력 비밀번호 오류입니다",
-            };
-        
-        }
+    updateUserPassword: async function ({id, newPassword}) {
         const { hashPassword, salt } = await cryptoService.passwordEncrypt({plain: newPassword});
         
         const result = await userRepository.updatePassword({
@@ -112,8 +97,21 @@ const userService = {
             newPassword: hashPassword,
             newPasswordSalt: salt
         });
-        return result;
+        let json;
+        if(result.rows.changedRows === 1) {
+            json = {
+                isSuccess: true,
+                message: "비밀번호 수정이 완료되었습니다",
+            }
+        } else {
+            json = {
+                isSuccess: false,
+                message: "관리자에게 문의하세요",
+            }
+        }
+        return json;
     }
+    
 };
 
 module.exports = userService;

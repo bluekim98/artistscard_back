@@ -11,12 +11,17 @@ const musicRouter = require('./routes/music');
 const userRouter = require('./routes/user');
 
 const app = express();
-app.set('port', process.env.PORT || 80);
 passportConfig();
+app.set('port', process.env.PORT || 80);
 const morganOption = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
 app.use(morgan(morganOption));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: ["set-cookie"],
+}));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(session({
     resave: false,
@@ -24,12 +29,13 @@ app.use(session({
     secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
-        maxAge: 24000 * 60 * 60
-    },
+        secure: false
+    }
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
+
 app.use('/api/music', musicRouter);
 app.use('/api/user', userRouter);
 

@@ -6,8 +6,8 @@ const router = express.Router();
 
 
 router.get('/track', async (req, res) => {
-    const {track} = req.query;
-    const result = await musicService.findMusic({track});
+    const {track, id} = req.query;
+    const result = await musicService.findMusic({track, id});
     res.send(result);
 });
 
@@ -27,6 +27,17 @@ router.post('/track', async (req, res) => {
 router.put('/track/id', async (req, res) => {
     const {id, track, album, artist, filepath} = req.body;
     const result = await musicService.updateTrack({id, track, album, artist, filepath});
+    res.send(result);
+});
+
+router.get('/list', async (req, res) => {
+    const {id, track} = req.query;
+    let result;
+    if(track) {
+        result = await musicService.findMusic({track, id});
+    } else {
+        result = await musicService.getPagedMusicList({id});
+    }
     res.send(result);
 });
 

@@ -7,9 +7,9 @@ module.exports = () => {
         done(null, userId);
     });
 
-    passport.deserializeUser(async (userId, done) => {
+    passport.deserializeUser(async (id, done) => {
         try {
-            const user = await userService.getUserInfoBy(userId);
+            const user = await userService.getUserInfoBy(id);
             done(null, user);
         } catch (error) {
             done(error);
