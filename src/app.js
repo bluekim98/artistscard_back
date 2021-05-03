@@ -18,9 +18,9 @@ app.use(morgan(morganOption));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: true,
+    origin: 'http://3.36.121.204',
     credentials: true,
-    exposedHeaders: ["set-cookie"],
+    exposedHeaders: ["Set-Cookie"],
 }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(session({
