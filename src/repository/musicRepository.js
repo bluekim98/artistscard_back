@@ -42,6 +42,11 @@ const __musicQueryMapper = {
         SELECT  MAX(music_id) as maxKey
         FROM    music
     `,
+    selectPagingKey: `
+        SELECT  IFNULL(MAX(music_id), 0) as maxKey
+            ,   IFNULL(MIN(music_id), 0) as minKey
+        FROM    music 
+    `
 };
 
 const musicRepository = {
@@ -151,7 +156,6 @@ const musicRepository = {
         try {
             db = await mysqlConnector.createDb();
             const sql = __musicQueryMapper.selectMaxKey;
-            console.log(`execute query : [${sql}]`);
             const [rows] = await db.execute({
                                             sql,
                                             values: [],
@@ -166,6 +170,35 @@ const musicRepository = {
         }
         return result;        
     },
+    findPagingKey: async function(track) {
+        let result;
+        let db;
+        try {
+            db = await mysqlConnector.createDb();
+            let sql = __musicQueryMapper.selectPagingKey;
+            if(track) {
+                sql += `
+                    WHERE   track_name LIKE ${db.escape('%'+track.trim()+'%')} 
+                    ORDER BY music_id DESC 
+                `;
+            }
+            console.log(`execute query : [${sql}]`);
+            const [rows] = await db.execute({
+                                            sql,
+                                            values: [],
+                                        });
+            result = {
+                maxKey: rows[0].maxKey,
+                minKey: rows[0].minKey
+            };
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if(db) db.end();     
+        }
+        return result;        
+    },
+
 };
 
 module.exports = musicRepository;
