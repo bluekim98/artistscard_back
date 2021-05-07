@@ -1,4 +1,5 @@
-const mysqlConnector = require('../thirdparty/mysqlConnector');
+const mysql = require('../thirdparty/mysql');
+const musicQueryFactory = require('./queryFactory/musicQueryFactory');
 
 const __musicQueryMapper = {
     insertMusic: `
@@ -52,153 +53,75 @@ const __musicQueryMapper = {
 const musicRepository = {
 
     save: async function({track, album, artist, filepath}) {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            const sql = __musicQueryMapper.insertMusic;
-            console.log(`execute query : [${sql}]`);
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [track, album, artist, filepath],
-                                        });
-            result = {
-                affectedRows: rows.affectedRows,
-                mysqlServerStatus: rows.serverStatus,
-                info: rows.info
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
-        }
+        const sql = musicQueryFactory.getSqlToInsertMusic();
+        const values = [track, album, artist, filepath]
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            affectedRows: rows.affectedRows,
+            mysqlServerStatus: rows.serverStatus,
+            info: rows.info            
+        };
         return result;
     },
     update: async function({id, track, album, artist, filepath}) {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            const sql = __musicQueryMapper.updateMusic;
-            console.log(`execute query : [${sql}]`);
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [track, album, artist, filepath, id],
-                                        });
-            result = {
-                affectedRows: rows.affectedRows,
-                mysqlServerStatus: rows.serverStatus,
-                info: rows.info
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
-        }
-        return result;        
+        const sql = musicQueryFactory.getSqlToUpdateMusic(['track_name', 'album_name', 'artist_name', 'music_file_path']);
+        const values = [track, album, artist, filepath, id];
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            affectedRows: rows.affectedRows,
+            mysqlServerStatus: rows.serverStatus,
+            info: rows.info
+        };
+        return result;     
     },
     findListBy: async function({track, musicKey}) {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            const sql = `
-                ${__musicQueryMapper.findMusicWhereLike} 
-                ${db.escape('%'+track.trim()+'%')} 
-                AND music_id <= ?         
-                ORDER BY music_id DESC 
-                LIMIT   5 
-            `;
-            
-            console.log(`execute query : [${sql}]`);
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [musicKey],
-                                        });
-            result = {
-                musicList: [
-                    ...rows
-                ]
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
-        }
-        return result;        
+        const escapeTrack = await mysql.escape('%' + track.trim() +'%');
+        const sql = musicQueryFactory.getSqlToFindListBy(escapeTrack);
+        const values = [musicKey];
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            musicList: [
+                ...rows
+            ]
+        };
+        return result;
     },
     findListAtPaging: async function({musicKey}) {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            const sql = __musicQueryMapper.selectListMostRecentBelowKey;
-            console.log(`execute query : [${sql}]`);
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [musicKey],
-                                        });
-            result = {
-                musicList: [
-                    ...rows
-                ]
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
-        }
-        return result;        
+        const sql = musicQueryFactory.getSqlToSelectListMostRecentBelowKey();
+        const values = [musicKey];
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            musicList: [
+                ...rows
+            ]
+        };
+        return result;    
     },
     findMostRecentKey: async function() {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            const sql = __musicQueryMapper.selectMaxKey;
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [],
-                                        });
-            result = {
-                recentKey: rows[0].maxKey
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
-        }
-        return result;        
+        const sql = musicQueryFactory.getSqlToSelectMaxKey();
+        const values = [];
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            recentKey: rows[0].maxKey
+        };
+        return result;     
     },
     findPagingKey: async function(track) {
-        let result;
-        let db;
-        try {
-            db = await mysqlConnector.createDb();
-            let sql = __musicQueryMapper.selectPagingKey;
-            if(track) {
-                sql += `
-                    WHERE   track_name LIKE ${db.escape('%'+track.trim()+'%')} 
-                    ORDER BY music_id DESC 
-                `;
-            }
-            console.log(`execute query : [${sql}]`);
-            const [rows] = await db.execute({
-                                            sql,
-                                            values: [],
-                                        });
-            result = {
-                maxKey: rows[0].maxKey,
-                minKey: rows[0].minKey
-            };
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();     
+        let sql;
+        if(track){
+            const escapeTrack = await mysql.escape('%' + track.trim() +'%');
+            sql = musicQueryFactory.getSqlToSelectPagingKey(escapeTrack);
+        } else {
+            sql = musicQueryFactory.getSqlToSelectPagingKey();
         }
-        return result;        
+        const values = [];
+        const {rows} = await mysql.exec({sql, values});
+        const result = {
+            maxKey: rows[0].maxKey,
+            minKey: rows[0].minKey
+        };
+        return result;    
     },
-
 };
 
 module.exports = musicRepository;
