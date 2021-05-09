@@ -1,55 +1,6 @@
 const mysql = require('../thirdparty/mysql');
 const musicQueryFactory = require('./queryFactory/musicQueryFactory');
 
-const __musicQueryMapper = {
-    insertMusic: `
-        INSERT INTO music(track_name, album_name, artist_name, music_file_path)
-        VALUES (?, ?, ?, ?)
-    `,
-    updateMusic: `
-        UPDATE  music
-        SET     track_name = ?
-            ,   album_name = ?
-            ,   artist_name = ?
-            ,   music_file_path = ?
-            ,   updated_at = now()
-        WHERE   music_id = ?
-    `,
-    findMusicWhereLike: `
-        SELECT  music_id        as musicId
-            ,   track_name      as trackName
-            ,   album_name      as albumName
-            ,   artist_name     as artistName
-            ,   music_file_path as musicFilePath
-            ,   created_at      as createAt
-            ,   updated_at      as updatedAt
-        FROM    music
-        WHERE   track_name LIKE 
-    `,
-    selectListMostRecentBelowKey: `
-        SELECT  music_id        as musicId
-            ,   track_name      as trackName
-            ,   album_name      as albumName
-            ,   artist_name     as artistName
-            ,   music_file_path as musicFilePath
-            ,   created_at      as createAt
-            ,   updated_at      as updatedAt
-        FROM    music
-        WHERE   music_id <= ?
-        ORDER BY music_id DESC
-        LIMIT   5
-    `,
-    selectMaxKey: `
-        SELECT  MAX(music_id) as maxKey
-        FROM    music
-    `,
-    selectPagingKey: `
-        SELECT  IFNULL(MAX(music_id), 0) as maxKey
-            ,   IFNULL(MIN(music_id), 0) as minKey
-        FROM    music 
-    `
-};
-
 const musicRepository = {
 
     save: async function({track, album, artist, filepath}) {
