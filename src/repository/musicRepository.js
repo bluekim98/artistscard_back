@@ -75,8 +75,7 @@ const musicRepository = {
         return result;     
     },
     findListBy: async function({track, musicKey}) {
-        const escapeTrack = await mysql.escape('%' + track.trim() +'%');
-        const sql = musicQueryFactory.getSqlToFindListBy(escapeTrack);
+        const sql = musicQueryFactory.getSqlToFindListBy(`'%${track.trim()}%'`);
         const values = [musicKey];
         const {rows} = await mysql.exec({sql, values});
         const result = {
@@ -109,8 +108,7 @@ const musicRepository = {
     findPagingKey: async function(track) {
         let sql;
         if(track){
-            const escapeTrack = await mysql.escape('%' + track.trim() +'%');
-            sql = musicQueryFactory.getSqlToSelectPagingKey(escapeTrack);
+            sql = musicQueryFactory.getSqlToSelectPagingKey(`'%${track.trim()}%'`);
         } else {
             sql = musicQueryFactory.getSqlToSelectPagingKey();
         }

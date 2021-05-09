@@ -27,17 +27,4 @@ module.exports = {
         }
         return result;        
     },
-    escape: async function(sql) {
-        let db;
-        let escapeSql;
-        try {
-            let db = await mysql2.createConnection(mysqlConfing.local);
-            escapeSql = db.escape(sql);
-        } catch (error) {
-            console.log(error);
-        } finally {
-            if(db) db.end();
-        }
-        return escapeSql;
-    }
 };
