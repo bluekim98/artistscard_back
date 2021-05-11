@@ -5,7 +5,8 @@ module.exports = {
     createDb: async function() {
         let connection;
         try {
-            connection = await mysql2.createConnection(mysqlConfing.local);
+            const config = process.env.NODE_ENV === 'production' ? mysqlConfing.app : mysqlConfing.local;
+            connection = await mysql2.createConnection(config);
         } catch (error) {
             console.log(error);
         }

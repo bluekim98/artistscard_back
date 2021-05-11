@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport');
-const passportConfig = require('./passport');
+const passportConfig = require('./thirdparty/passport');
 const musicRouter = require('./routes/music');
 const userRouter = require('./routes/user');
 

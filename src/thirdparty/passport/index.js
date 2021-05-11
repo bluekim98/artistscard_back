@@ -1,6 +1,6 @@
 const passport = require('passport');
 const local = require('./localStrategy');
-const userService = require('../service/userService');
+const userService = require('../../service/userService');
 
 module.exports = () => {
     passport.serializeUser(async (userId, done) => {

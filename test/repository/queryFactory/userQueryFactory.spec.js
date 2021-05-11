@@ -7,10 +7,7 @@ describe('userQueryFactory test!', () => {
             VALUES (  ? ,  ? ,  ? ,  ?  )
     `;
     it('getInsertUserQuery should return default insert query', () => {
-        assert.strictEqual(userQueryFactory.getInsertUserQuery().trim(), defaultInsertQuery.trim());
+        assert.strictEqual(userQueryFactory.getSqlToInsertUser().trim(), defaultInsertQuery.trim());
     });
 
-    it('getUpdateUserQuery you have to check return value in console log', () => {
-        console.log(userQueryFactory.getUpdateUserQuery(['user_password', 'password_salt']));
-    })
 });
